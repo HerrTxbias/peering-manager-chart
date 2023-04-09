@@ -1,0 +1,140 @@
+{{- if .Values.peeringdb-sync.enabled -}}
+{{- if semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: batch/v1
+{{- else -}}
+apiVersion: batch/v1beta1
+{{- end }}
+kind: CronJob
+metadata:
+  name: {{ include "peering-manager.fullname" . }}-peeringdb-sync
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "peering-manager.labels" . | nindent 4 }}
+    app.kubernetes.io/component: peeringdb-sync
+spec:
+  concurrencyPolicy: {{ .Values.peeringdb-sync.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ .Values.peeringdb-sync.failedJobsHistoryLimit }}
+  schedule: {{ .Values.peeringdb-sync.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.peeringdb-sync.successfulJobsHistoryLimit }}
+  suspend: {{ .Values.peeringdb-sync.suspend }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "peering-manager.labels" . | nindent 8 }}
+    spec:
+      template:
+        metadata:
+          {{- with .Values.peeringdb-sync.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "peering-manager.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: peeringdb-sync
+            {{- with .Values.peeringdb-sync.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "peering-manager.serviceAccountName" . }}
+          securityContext:
+            {{- toYaml .Values.peeringdb-sync.podSecurityContext | nindent 12 }}
+          {{- with .Values.peeringdb-sync.extraInitContainers }}
+          initContainers:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ .Chart.Name }}-peeringdb-sync
+              securityContext:
+                {{- toYaml .Values.peeringdb-sync.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              command:
+                - /opt/peering-manager/venv/bin/python
+                - /opt/peering-manager/manage.py
+                - peeringdb_sync
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- with .Values.peeringdb-sync.extraEnvs }}
+              env:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/peering-manager/config/configuration.py
+                  subPath: configuration.py
+                  readOnly: true
+                - name: config
+                  mountPath: /run/config/peering-manager
+                  readOnly: true
+                - name: secrets
+                  mountPath: /run/secrets/peering-manager
+                  readOnly: true
+                {{- include "peering-manager.extraConfig.volumeMounts" . | nindent 16 -}}
+                - name: peering-manager-tmp
+                  mountPath: /tmp
+                {{- with .Values.peeringdb-sync.extraVolumeMounts }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              {{- if .Values.peeringdb-sync.resources }}
+              resources:
+                {{- toYaml .Values.peeringdb-sync.resources | nindent 16 }}
+              {{- end }}
+            {{- with .Values.peeringdb-sync.extraContainers }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumes:
+            - name: config
+              configMap:
+                name: {{ include "peering-manager.fullname" . }}
+            - name: secrets
+              projected:
+                sources:
+                  - secret:
+                      name: {{ .Values.existingSecret | default (include "peering-manager.fullname" .) | quote }}
+                      items:
+                        # Used by our configuration
+                        - key: email_password
+                          path: email_password
+                        - key: secret_key
+                          path: secret_key
+                  - secret:
+                      name: {{ include "peering-manager.postgresql.secret" . | quote }}
+                      items:
+                        - key: {{ include "peering-manager.postgresql.secretKey" . | quote }}
+                          path: db_password
+                  - secret:
+                      name: {{ include "peering-manager.tasksRedis.secret" . | quote }}
+                      items:
+                        - key: {{ include "peering-manager.tasksRedis.secretKey" . | quote }}
+                          path: redis_tasks_password
+                  - secret:
+                      name: {{ include "peering-manager.cachingRedis.secret" . | quote }}
+                      items:
+                        - key: {{ include "peering-manager.cachingRedis.secretKey" . | quote }}
+                          path: redis_cache_password
+            {{- include "peering-manager.extraConfig.volumes" . | nindent 12 -}}
+            - name: peering-manager-tmp
+              emptyDir:
+                medium: Memory
+            {{- with .Values.peeringdb-sync.extraVolumes }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.peeringdb-sync.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.peeringdb-sync.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.peeringdb-sync.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: {{ .Values.peeringdb-sync.restartPolicy }}
+{{- end -}}
