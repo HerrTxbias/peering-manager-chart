@@ -1,6 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "peering-manager.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
+{{- $fullName := include "netbox.fullname" . -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -17,10 +16,15 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "peering-manager.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+    {{- include "netbox.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.ingress.annotations }}
   annotations:
+  {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
@@ -42,20 +46,24 @@ spec:
       http:
         paths:
           {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-            pathType: {{ .pathType }}
+          {{- if kindIs "string" . }}
+          - path: {{ . }}
+            {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
+            pathType: Prefix
             {{- end }}
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
                 name: {{ $fullName }}
                 port:
-                  number: {{ $svcPort }}
+                  name: http
               {{- else }}
               serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
+              servicePort: http
               {{- end }}
+          {{- else }}
+          - {{ . | toYaml | indent 12 | trim }}
+          {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}
