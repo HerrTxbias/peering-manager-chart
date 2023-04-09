@@ -151,6 +151,10 @@ spec:
                       path: email_password
                     - key: napalm_password
                       path: napalm_password
+                    - key: netbox_api_token
+                      path: netbox_api_token
+                    - key: peeringdb_password
+                      path: peeringdb_password
                     - key: secret_key
                       path: secret_key
               - secret:
