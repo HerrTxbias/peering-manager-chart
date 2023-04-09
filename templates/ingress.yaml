@@ -1,5 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "netbox.fullname" . -}}
+{{- $fullName := include "peering-manager.fullname" . -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -16,7 +16,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "netbox.labels" . | nindent 4 }}
+    {{- include "peering-manager.labels" . | nindent 4 }}
   {{- if or .Values.commonAnnotations .Values.ingress.annotations }}
   annotations:
   {{- with .Values.ingress.annotations }}

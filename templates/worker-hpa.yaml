@@ -2,19 +2,19 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "netbox.fullname" . }}-worker
+  name: {{ include "peering-manager.fullname" . }}-worker
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
-    {{- include "netbox.labels" . | nindent 4 }}
+    {{- include "peering-manager.labels" . | nindent 4 }}
     app.kubernetes.io/component: worker
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "netbox.fullname" . }}-worker
+    name: {{ include "peering-manager.fullname" . }}-worker
   minReplicas: {{ .Values.worker.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.worker.autoscaling.maxReplicas }}
   metrics:

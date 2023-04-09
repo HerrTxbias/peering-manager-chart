@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "netbox.fullname" . }}
+  name: {{ include "peering-manager.fullname" . }}
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
-{{ include "netbox.labels" . | indent 4 }}
+{{ include "peering-manager.labels" . | indent 4 }}
 data:
   configuration.py: |
     import re
@@ -29,7 +29,7 @@ data:
 
     def _load_yaml():
       extraConfigBase = Path('/run/config/extra')
-      configFiles = [Path('/run/config/netbox/netbox.yaml')]
+      configFiles = [Path('/run/config/peering-manager/peering-manager.yaml')]
 
       configFiles.extend(sorted(extraConfigBase.glob('*/*.yaml')))
 
@@ -46,12 +46,12 @@ data:
 
     _load_yaml()
 
-    DATABASE['PASSWORD'] = _load_secret('netbox', 'db_password')
-    EMAIL['PASSWORD'] = _load_secret('netbox', 'email_password')
-    NAPALM_PASSWORD = _load_secret('netbox', 'napalm_password')
-    REDIS['tasks']['PASSWORD'] = _load_secret('netbox', 'redis_tasks_password')
-    REDIS['caching']['PASSWORD'] = _load_secret('netbox', 'redis_cache_password')
-    SECRET_KEY = _load_secret('netbox', 'secret_key')
+    DATABASE['PASSWORD'] = _load_secret('peering-manager', 'db_password')
+    EMAIL['PASSWORD'] = _load_secret('peering-manager', 'email_password')
+    NAPALM_PASSWORD = _load_secret('peering-manager', 'napalm_password')
+    REDIS['tasks']['PASSWORD'] = _load_secret('peering-manager', 'redis_tasks_password')
+    REDIS['caching']['PASSWORD'] = _load_secret('peering-manager', 'redis_cache_password')
+    SECRET_KEY = _load_secret('peering-manager', 'secret_key')
 
     # Post-process certain values
     CORS_ORIGIN_REGEX_WHITELIST = [re.compile(r) for r
@@ -65,7 +65,7 @@ data:
                                      in REDIS['caching']['SENTINELS']]
     {{- end }}
 
-  netbox.yaml: |
+  peering-manager.yaml: |
     ALLOWED_HOSTS: {{ toJson .Values.allowedHosts }}
 
     DATABASE:
@@ -130,7 +130,7 @@ data:
     MAINTENANCE_MODE: {{ toJson .Values.maintenanceMode }}
     MAPS_URL: {{ .Values.mapsUrl | quote }}
     MAX_PAGE_SIZE: {{ int .Values.maxPageSize }}
-    MEDIA_ROOT: /opt/netbox/netbox/media
+    MEDIA_ROOT: /opt/peering-manager/peering-manager/media
     STORAGE_BACKEND: {{ .Values.storageBackend | quote }}
     STORAGE_CONFIG:  {{ toJson .Values.storageConfig }}
     METRICS_ENABLED: {{ toJson .Values.metricsEnabled }}
@@ -197,9 +197,9 @@ data:
         INSECURE_SKIP_TLS_VERIFY: {{ toJson .Values.cachingRedis.insecureSkipTlsVerify }}
         CA_CERT_PATH: {{ .Values.cachingRedis.caCertPath | quote }}
 
-    REPORTS_ROOT: /opt/netbox/netbox/reports
+    REPORTS_ROOT: /opt/peering-manager/peering-manager/reports
     RQ_DEFAULT_TIMEOUT: {{ .Values.rqDefaultTimeout | int }}
-    SCRIPTS_ROOT: /opt/netbox/netbox/scripts
+    SCRIPTS_ROOT: /opt/peering-manager/peering-manager/scripts
     CSRF_COOKIE_NAME: {{ .Values.csrf.cookieName | quote }}
     SESSION_COOKIE_NAME: {{ .Values.sessionCookieName }}
     ENABLE_LOCALIZATION: {{ toJson .Values.enableLocalization }}
@@ -211,7 +211,7 @@ data:
     DATETIME_FORMAT: {{ .Values.dateTimeFormat | quote }}
     SHORT_DATETIME_FORMAT: {{ .Values.shortDateTimeFormat | quote }}
 
-  {{- if eq .Values.remoteAuth.backend "netbox.authentication.LDAPBackend" }}
+  {{- if eq .Values.remoteAuth.backend "peering-manager.authentication.LDAPBackend" }}
 
   ldap_config.py: |
     import yaml
@@ -219,7 +219,7 @@ data:
     from django_auth_ldap.config import LDAPSearch
     from importlib import import_module
     def _load_yaml():
-      with open('/run/config/netbox/ldap.yaml', 'r') as f:
+      with open('/run/config/peering-manager/ldap.yaml', 'r') as f:
         config = yaml.safe_load(f)
       globals().update(config)
     def _load_secret(name, key):
@@ -234,7 +234,7 @@ data:
         except:
             return None
     _load_yaml()
-    AUTH_LDAP_BIND_PASSWORD = _load_secret('netbox', 'ldap_bind_password')
+    AUTH_LDAP_BIND_PASSWORD = _load_secret('peering-manager', 'ldap_bind_password')
     # The following may be needed if you are binding to Active Directory.
     AUTH_LDAP_CONNECTION_OPTIONS = {
         ldap.OPT_REFERRALS: 0

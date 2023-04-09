@@ -6,13 +6,13 @@ apiVersion: batch/v1beta1
 {{- end }}
 kind: CronJob
 metadata:
-  name: {{ include "netbox.fullname" . }}-housekeeping
+  name: {{ include "peering-manager.fullname" . }}-housekeeping
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
-    {{- include "netbox.labels" . | nindent 4 }}
+    {{- include "peering-manager.labels" . | nindent 4 }}
     app.kubernetes.io/component: housekeeping
 spec:
   concurrencyPolicy: {{ .Values.housekeeping.concurrencyPolicy }}
@@ -23,7 +23,7 @@ spec:
   jobTemplate:
     metadata:
       labels:
-        {{- include "netbox.labels" . | nindent 8 }}
+        {{- include "peering-manager.labels" . | nindent 8 }}
     spec:
       template:
         metadata:
@@ -32,7 +32,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           labels:
-            {{- include "netbox.selectorLabels" . | nindent 12 }}
+            {{- include "peering-manager.selectorLabels" . | nindent 12 }}
             app.kubernetes.io/component: housekeeping
             {{- with .Values.housekeeping.podLabels }}
             {{- toYaml . | nindent 12 }}
@@ -42,7 +42,7 @@ spec:
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          serviceAccountName: {{ include "netbox.serviceAccountName" . }}
+          serviceAccountName: {{ include "peering-manager.serviceAccountName" . }}
           securityContext:
             {{- toYaml .Values.housekeeping.podSecurityContext | nindent 12 }}
           {{- with .Values.housekeeping.extraInitContainers }}
@@ -55,8 +55,8 @@ spec:
                 {{- toYaml .Values.housekeeping.securityContext | nindent 16 }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               command:
-                - /opt/netbox/venv/bin/python
-                - /opt/netbox/netbox/manage.py
+                - /opt/peering-manager/venv/bin/python
+                - /opt/peering-manager/peering-manager/manage.py
                 - housekeeping
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               {{- with .Values.housekeeping.extraEnvs }}
@@ -65,30 +65,30 @@ spec:
               {{- end }}
               volumeMounts:
                 - name: config
-                  mountPath: /etc/netbox/config/configuration.py
+                  mountPath: /etc/peering-manager/config/configuration.py
                   subPath: configuration.py
                   readOnly: true
-                {{ if eq .Values.remoteAuth.backend "netbox.authentication.LDAPBackend" -}}
+                {{ if eq .Values.remoteAuth.backend "peering-manager.authentication.LDAPBackend" -}}
                 - name: config
-                  mountPath: /etc/netbox/config/ldap/ldap_config.py
+                  mountPath: /etc/peering-manager/config/ldap/ldap_config.py
                   subPath: ldap_config.py
                   readOnly: true
                 {{ end -}}
                 - name: config
-                  mountPath: /run/config/netbox
+                  mountPath: /run/config/peering-manager
                   readOnly: true
                 - name: secrets
-                  mountPath: /run/secrets/netbox
+                  mountPath: /run/secrets/peering-manager
                   readOnly: true
-                {{- include "netbox.extraConfig.volumeMounts" . | nindent 16 -}}
-                - name: netbox-tmp
+                {{- include "peering-manager.extraConfig.volumeMounts" . | nindent 16 -}}
+                - name: peering-manager-tmp
                   mountPath: /tmp
                 - name: media
-                  mountPath: /opt/netbox/netbox/media
+                  mountPath: /opt/peering-manager/peering-manager/media
                   subPath: {{ .Values.persistence.subPath | default "" | quote }}
                 {{- if .Values.reportsPersistence.enabled }}
                 - name: reports
-                  mountPath: /opt/netbox/netbox/reports
+                  mountPath: /opt/peering-manager/peering-manager/reports
                   subPath: {{ .Values.reportsPersistence.subPath | default "" | quote }}
                 {{- end }}
                 {{- with .Values.housekeeping.extraVolumeMounts }}
@@ -104,12 +104,12 @@ spec:
           volumes:
             - name: config
               configMap:
-                name: {{ include "netbox.fullname" . }}
+                name: {{ include "peering-manager.fullname" . }}
             - name: secrets
               projected:
                 sources:
                   - secret:
-                      name: {{ .Values.existingSecret | default (include "netbox.fullname" .) | quote }}
+                      name: {{ .Values.existingSecret | default (include "peering-manager.fullname" .) | quote }}
                       items:
                         # Used by our configuration
                         - key: email_password
@@ -118,40 +118,40 @@ spec:
                           path: napalm_password
                         - key: secret_key
                           path: secret_key
-                        {{- if eq .Values.remoteAuth.backend "netbox.authentication.LDAPBackend" }}
+                        {{- if eq .Values.remoteAuth.backend "peering-manager.authentication.LDAPBackend" }}
                         - key: ldap_bind_password
                           path: ldap_bind_password
                         {{- end }}
                   - secret:
-                      name: {{ include "netbox.postgresql.secret" . | quote }}
+                      name: {{ include "peering-manager.postgresql.secret" . | quote }}
                       items:
-                        - key: {{ include "netbox.postgresql.secretKey" . | quote }}
+                        - key: {{ include "peering-manager.postgresql.secretKey" . | quote }}
                           path: db_password
                   - secret:
-                      name: {{ include "netbox.tasksRedis.secret" . | quote }}
+                      name: {{ include "peering-manager.tasksRedis.secret" . | quote }}
                       items:
-                        - key: {{ include "netbox.tasksRedis.secretKey" . | quote }}
+                        - key: {{ include "peering-manager.tasksRedis.secretKey" . | quote }}
                           path: redis_tasks_password
                   - secret:
-                      name: {{ include "netbox.cachingRedis.secret" . | quote }}
+                      name: {{ include "peering-manager.cachingRedis.secret" . | quote }}
                       items:
-                        - key: {{ include "netbox.cachingRedis.secretKey" . | quote }}
+                        - key: {{ include "peering-manager.cachingRedis.secretKey" . | quote }}
                           path: redis_cache_password
-            {{- include "netbox.extraConfig.volumes" . | nindent 12 -}}
-            - name: netbox-tmp
+            {{- include "peering-manager.extraConfig.volumes" . | nindent 12 -}}
+            - name: peering-manager-tmp
               emptyDir:
                 medium: Memory
             - name: media
               {{- if .Values.persistence.enabled }}
               persistentVolumeClaim:
-                claimName: {{ .Values.persistence.existingClaim | default (printf "%s-media" (include "netbox.fullname" .)) }}
+                claimName: {{ .Values.persistence.existingClaim | default (printf "%s-media" (include "peering-manager.fullname" .)) }}
               {{- else }}
               emptyDir: {}
               {{- end }}
             {{- if .Values.reportsPersistence.enabled }}
             - name: reports
               persistentVolumeClaim:
-                claimName: {{ .Values.reportsPersistence.existingClaim | default (printf "%s-reports" (include "netbox.fullname" .)) }}
+                claimName: {{ .Values.reportsPersistence.existingClaim | default (printf "%s-reports" (include "peering-manager.fullname" .)) }}
             {{- end }}
             {{- with .Values.housekeeping.extraVolumes }}
             {{- toYaml . | nindent 12 }}

@@ -100,12 +100,12 @@ extraVolumes: []
 #    secret:
 #      secretName: super-secret
 
-## Additional containers to be added to the NetBox pod.
+## Additional containers to be added to the peering-manager pod.
 extraContainers: []
 #  - name: my-sidecar
 #    image: nginx:latest
 
-## Containers which are run before the NetBox containers are started.
+## Containers which are run before the peering-manager containers are started.
 extraInitContainers: []
 #  - name: init-myservice
 #    image: busybox
@@ -162,19 +162,19 @@ email:
   timeout: 10  # seconds
   from: ''
 
-# HTTP proxies NetBox should use when sending outbound HTTP requests (e.g. for
+# HTTP proxies peering-manager should use when sending outbound HTTP requests (e.g. for
 # webhooks).
 httpProxies: null
   # http: http://10.10.1.10:3128
   # https: http://10.10.1.10:1080
 
 # IP addresses recognized as internal to the system. The debugging toolbar will
-# be available only to clients accessing NetBox from an internal IP.
+# be available only to clients accessing peering-manager from an internal IP.
 internalIPs: ['127.0.0.1', '::1']
 
 # The number of days to retain job results (scripts and reports). Set this to 0
 # to retain job results in the database indefinitely.
-# https://docs.netbox.dev/en/stable/configuration/dynamic-settings/#jobresult_retention
+# https://docs.peering-manager.dev/en/stable/configuration/dynamic-settings/#jobresult_retention
 jobResultRetention: 90
 
 # Enable custom logging. Please see the Django documentation for detailed
@@ -183,8 +183,8 @@ jobResultRetention: 90
 logging: {}
 
 # Setting this to True will permit only authenticated users to access any part
-# of NetBox. By default, anonymous users are permitted to access most data in
-# NetBox but not make any changes.
+# of peering-manager. By default, anonymous users are permitted to access most data in
+# peering-manager but not make any changes.
 loginRequired: false
 
 # Expose Prometheus monitoring metrics at the HTTP endpoint '/metrics'
@@ -194,11 +194,11 @@ metricsEnabled: false
 paginateCount: 50
 
 releaseCheck:
-  # This repository is used to check whether there is a new release of NetBox
+  # This repository is used to check whether there is a new release of peering-manager
   # available. Set to null to disable the version check or use the URL below to
-  # check for release in the official NetBox repository.
+  # check for release in the official peering-manager repository.
   url: null
-  # url: https://api.github.com/repos/netbox-community/netbox/releases
+  # url: https://api.github.com/repos/peering-manager-community/peering-manager/releases
 
 # Maximum execution time for background tasks, in seconds.
 rqDefaultTimeout: 300  # 5 mins
@@ -216,7 +216,7 @@ dateTimeFormat: 'N j, Y g:i a'
 shortDateTimeFormat: 'Y-m-d H:i'
 
 ## Extra configuration settings
-# You can pass additional YAML files to be loaded into NetBox's configuration.
+# You can pass additional YAML files to be loaded into peering-manager's configuration.
 # These can be passed as arbitrary configuration values set in the chart, or
 # you can load arbitrary *.yaml keys from ConfigMaps and Secrets.
 extraConfig: []
@@ -224,11 +224,11 @@ extraConfig: []
   #     EXTRA_SETTING_ONE: example
   #     ANOTHER_SETTING: foobar
   # - configMap: # pod.spec.volumes.configMap
-  #     name: netbox-extra
+  #     name: peering-manager-extra
   #     items: []
   #     optional: false
   # - secret: # same as pod.spec.volumes.secret
-  #     secretName: netbox-extra
+  #     secretName: peering-manager-extra
   #     items: []
   #     optional: false
 
@@ -407,19 +407,19 @@ housekeeping:
   #    secret:
   #      secretName: super-secret
 
-  ## Additional containers to be added to the NetBox pod.
+  ## Additional containers to be added to the peering-manager pod.
   extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
-  ## Containers which are run before the NetBox containers are started.
+  ## Containers which are run before the peering-manager containers are started.
   extraInitContainers: []
   #  - name: init-myservice
   #    image: busybox
   #    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
-# Worker for Netbox
-# Only required for Netbox Jobs, e.g. Webhooks
+# Worker for peering-manager
+# Only required for peering-manager Jobs, e.g. Webhooks
 worker:
   enabled: true
 
@@ -493,12 +493,12 @@ worker:
   #    secret:
   #      secretName: super-secret
 
-  ## Additional containers to be added to the NetBox pod.
+  ## Additional containers to be added to the peering-manager pod.
   extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
-  ## Containers which are run before the NetBox containers are started.
+  ## Containers which are run before the peering-manager containers are started.
   extraInitContainers: []
   #  - name: init-myservice
   #    image: busybox
