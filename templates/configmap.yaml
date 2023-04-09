@@ -49,6 +49,8 @@ data:
     DATABASE['PASSWORD'] = _load_secret('peering-manager', 'db_password')
     EMAIL['PASSWORD'] = _load_secret('peering-manager', 'email_password')
     NAPALM_PASSWORD = _load_secret('peering-manager', 'napalm_password')
+    NETBOX_API_TOKEN = _load_secret('peering-manager', 'netbox_api_token')
+    PEERINGDB_PASSWORD = _load_secret('peering-manager', 'peeringdb_password')
     REDIS['tasks']['PASSWORD'] = _load_secret('peering-manager', 'redis_tasks_password')
     REDIS['caching']['PASSWORD'] = _load_secret('peering-manager', 'redis_cache_password')
     SECRET_KEY = _load_secret('peering-manager', 'secret_key')
@@ -113,7 +115,15 @@ data:
     LOGGING: {{ toJson .Values.logging }}
     LOGIN_REQUIRED: {{ toJson .Values.loginRequired }}
     METRICS_ENABLED: {{ toJson .Values.metricsEnabled }}
+    NETBOX_API: {{ toJson .Values.netbox.api.url }}
+    NETBOX_API_THREADING: {{ toJson .Values.netbox.api.threading }}
+    NETBOX_API_VERIFY_SSL: {{ toJson .Values.netbox.api.verifySSL }}
+    NETBOX_DEVICE_ROLES: {{ toJson .Values.netbox.deviceRoles }}
+    NETBOX_TAGS: {{ toJson .Values.netbox.tags }}
     PAGINATE_COUNT: {{ int .Values.paginateCount }}
+    PEERINGDB_USERNAME: {{ toJson .Values.peeringdb.username | quote }}
+    PEERINGDB_API_KEY: {{ toJson .Values.peeringdb.apiKey | quote }}
+    PEERINGDB_SYNC_INTERVAL: {{ int .Values.peeringdb.syncInterval }}
     RELEASE_CHECK_URL: {{ toJson .Values.releaseCheck.url }}
 
     REDIS:
