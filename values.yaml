@@ -479,7 +479,7 @@ housekeeping:
   #    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
 # Configuration of Cron settings
-peeringdb-sync:
+peeringdbSync:
   enabled: true
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5

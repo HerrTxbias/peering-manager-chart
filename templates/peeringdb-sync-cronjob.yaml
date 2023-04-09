@@ -1,4 +1,4 @@
-{{- if .Values.peeringdb-sync.enabled -}}
+{{- if .Values.peeringdbSync.enabled -}}
 {{- if semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: batch/v1
 {{- else -}}
@@ -6,20 +6,20 @@ apiVersion: batch/v1beta1
 {{- end }}
 kind: CronJob
 metadata:
-  name: {{ include "peering-manager.fullname" . }}-peeringdb-sync
+  name: {{ include "peering-manager.fullname" . }}-peeringdbSync
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
     {{- include "peering-manager.labels" . | nindent 4 }}
-    app.kubernetes.io/component: peeringdb-sync
+    app.kubernetes.io/component: peeringdbSync
 spec:
-  concurrencyPolicy: {{ .Values.peeringdb-sync.concurrencyPolicy }}
-  failedJobsHistoryLimit: {{ .Values.peeringdb-sync.failedJobsHistoryLimit }}
-  schedule: {{ .Values.peeringdb-sync.schedule | quote }}
-  successfulJobsHistoryLimit: {{ .Values.peeringdb-sync.successfulJobsHistoryLimit }}
-  suspend: {{ .Values.peeringdb-sync.suspend }}
+  concurrencyPolicy: {{ .Values.peeringdbSync.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ .Values.peeringdbSync.failedJobsHistoryLimit }}
+  schedule: {{ .Values.peeringdbSync.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.peeringdbSync.successfulJobsHistoryLimit }}
+  suspend: {{ .Values.peeringdbSync.suspend }}
   jobTemplate:
     metadata:
       labels:
@@ -27,14 +27,14 @@ spec:
     spec:
       template:
         metadata:
-          {{- with .Values.peeringdb-sync.podAnnotations }}
+          {{- with .Values.peeringdbSync.podAnnotations }}
           annotations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           labels:
             {{- include "peering-manager.selectorLabels" . | nindent 12 }}
-            app.kubernetes.io/component: peeringdb-sync
-            {{- with .Values.peeringdb-sync.podLabels }}
+            app.kubernetes.io/component: peeringdbSync
+            {{- with .Values.peeringdbSync.podLabels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
@@ -44,22 +44,22 @@ spec:
           {{- end }}
           serviceAccountName: {{ include "peering-manager.serviceAccountName" . }}
           securityContext:
-            {{- toYaml .Values.peeringdb-sync.podSecurityContext | nindent 12 }}
-          {{- with .Values.peeringdb-sync.extraInitContainers }}
+            {{- toYaml .Values.peeringdbSync.podSecurityContext | nindent 12 }}
+          {{- with .Values.peeringdbSync.extraInitContainers }}
           initContainers:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           containers:
-            - name: {{ .Chart.Name }}-peeringdb-sync
+            - name: {{ .Chart.Name }}-peeringdbSync
               securityContext:
-                {{- toYaml .Values.peeringdb-sync.securityContext | nindent 16 }}
+                {{- toYaml .Values.peeringdbSync.securityContext | nindent 16 }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               command:
                 - /opt/peering-manager/venv/bin/python
                 - /opt/peering-manager/manage.py
                 - peeringdb_sync
               imagePullPolicy: {{ .Values.image.pullPolicy }}
-              {{- with .Values.peeringdb-sync.extraEnvs }}
+              {{- with .Values.peeringdbSync.extraEnvs }}
               env:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
@@ -77,14 +77,14 @@ spec:
                 {{- include "peering-manager.extraConfig.volumeMounts" . | nindent 16 -}}
                 - name: peering-manager-tmp
                   mountPath: /tmp
-                {{- with .Values.peeringdb-sync.extraVolumeMounts }}
+                {{- with .Values.peeringdbSync.extraVolumeMounts }}
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
-              {{- if .Values.peeringdb-sync.resources }}
+              {{- if .Values.peeringdbSync.resources }}
               resources:
-                {{- toYaml .Values.peeringdb-sync.resources | nindent 16 }}
+                {{- toYaml .Values.peeringdbSync.resources | nindent 16 }}
               {{- end }}
-            {{- with .Values.peeringdb-sync.extraContainers }}
+            {{- with .Values.peeringdbSync.extraContainers }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           volumes:
@@ -127,20 +127,20 @@ spec:
             - name: peering-manager-tmp
               emptyDir:
                 medium: Memory
-            {{- with .Values.peeringdb-sync.extraVolumes }}
+            {{- with .Values.peeringdbSync.extraVolumes }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- with .Values.peeringdb-sync.nodeSelector }}
+          {{- with .Values.peeringdbSync.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.peeringdb-sync.affinity }}
+          {{- with .Values.peeringdbSync.affinity }}
           affinity:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.peeringdb-sync.tolerations }}
+          {{- with .Values.peeringdbSync.tolerations }}
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          restartPolicy: {{ .Values.peeringdb-sync.restartPolicy }}
+          restartPolicy: {{ .Values.peeringdbSync.restartPolicy }}
 {{- end -}}
