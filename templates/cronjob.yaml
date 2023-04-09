@@ -56,7 +56,7 @@ spec:
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               command:
                 - /opt/peering-manager/venv/bin/python
-                - /opt/peering-manager/peering-manager/manage.py
+                - /opt/peering-manager/manage.py
                 - housekeeping
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               {{- with .Values.housekeeping.extraEnvs }}
@@ -84,11 +84,11 @@ spec:
                 - name: peering-manager-tmp
                   mountPath: /tmp
                 - name: media
-                  mountPath: /opt/peering-manager/peering-manager/media
+                  mountPath: /opt/peering-manager/media
                   subPath: {{ .Values.persistence.subPath | default "" | quote }}
                 {{- if .Values.reportsPersistence.enabled }}
                 - name: reports
-                  mountPath: /opt/peering-manager/peering-manager/reports
+                  mountPath: /opt/peering-manager/reports
                   subPath: {{ .Values.reportsPersistence.subPath | default "" | quote }}
                 {{- end }}
                 {{- with .Values.housekeeping.extraVolumeMounts }}

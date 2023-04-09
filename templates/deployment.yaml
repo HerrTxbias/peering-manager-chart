@@ -122,11 +122,11 @@ spec:
             - name: peering-manager-tmp
               mountPath: /tmp
             - name: media
-              mountPath: /opt/peering-manager/peering-manager/media
+              mountPath: /opt/peering-manager/media
               subPath: {{ .Values.persistence.subPath | default "" | quote }}
             {{- if .Values.reportsPersistence.enabled }}
             - name: reports
-              mountPath: /opt/peering-manager/peering-manager/reports
+              mountPath: /opt/peering-manager/reports
               subPath: {{ .Values.reportsPersistence.subPath | default "" | quote }}
             {{- end }}
             - name: optunit
