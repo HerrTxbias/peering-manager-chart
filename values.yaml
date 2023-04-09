@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: peeringmanager/peering-manager
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -80,3 +80,426 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+## Additional environment variables to set
+extraEnvs: []
+#  - name: FOO
+#    valueFrom:
+#      secretKeyRef:
+#        key: FOO
+#        name: secret-resource
+
+## Additional volumes to mount
+extraVolumeMounts: []
+#  - name: extra-volume
+#    mountPath: /run/secrets/super-secret
+#    readOnly: true
+
+extraVolumes: []
+#  - name: extra-volume
+#    secret:
+#      secretName: super-secret
+
+## Additional containers to be added to the NetBox pod.
+extraContainers: []
+#  - name: my-sidecar
+#    image: nginx:latest
+
+## Containers which are run before the NetBox containers are started.
+extraInitContainers: []
+#  - name: init-myservice
+#    image: busybox
+#    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
+# You can also use an existing secret for the superuser password and API token
+# See `existingSecret` for details
+superuser:
+  name: admin
+  email: admin@example.com
+  password: admin
+  apiToken: 0123456789abcdef0123456789abcdef01234567
+
+# Skip the peering-manager-docker startup scripts which can pre-populate objects into a
+# fresh peering-manager installation. By default these do nothing, but they take a while
+# to run, so we skip them. 
+skipStartupScripts: true
+
+# This is a list of valid fully-qualified domain names (FQDNs) for the peering-manager
+# server. peering-manager will not permit write access to the server via any other
+# hostnames. The first FQDN in the list will be treated as the preferred name.
+allowedHosts:
+  - '*'
+
+# Base URL path if accessing peering-manager within a directory. For example, if
+# installed at http://example.com/peering-manager/, set to 'peering-manager/'. If using
+# Kubernetes Ingress, make sure you set ingress.hosts[].paths[] appropriately.
+basePath: ''
+
+banner:
+  # Text to include on the login page above the login form. HTML is allowed.
+  login: ''
+
+# Maximum number of days to retain logged changes. Set to 0 to retain change
+# logs indefinitely. (Default: 90)
+changelogRetention: 90
+
+# Set to True to enable server debugging. WARNING: Debugging introduces a
+# substantial performance penalty and may reveal sensitive information about
+# your installation. Only enable debugging while performing testing. Never
+# enable debugging on a production system.
+debug: false
+
+# Email settings
+email:
+  server: localhost
+  port: 25
+  username: ''
+  password: ''
+  useSSL: false
+  useTLS: false
+  sslCertFile: ''
+  sslKeyFile: ''
+  timeout: 10  # seconds
+  from: ''
+
+# HTTP proxies NetBox should use when sending outbound HTTP requests (e.g. for
+# webhooks).
+httpProxies: null
+  # http: http://10.10.1.10:3128
+  # https: http://10.10.1.10:1080
+
+# IP addresses recognized as internal to the system. The debugging toolbar will
+# be available only to clients accessing NetBox from an internal IP.
+internalIPs: ['127.0.0.1', '::1']
+
+# The number of days to retain job results (scripts and reports). Set this to 0
+# to retain job results in the database indefinitely.
+# https://docs.netbox.dev/en/stable/configuration/dynamic-settings/#jobresult_retention
+jobResultRetention: 90
+
+# Enable custom logging. Please see the Django documentation for detailed
+# guidance on configuring custom logs:
+# https://docs.djangoproject.com/en/1.11/topics/logging/
+logging: {}
+
+# Setting this to True will permit only authenticated users to access any part
+# of NetBox. By default, anonymous users are permitted to access most data in
+# NetBox but not make any changes.
+loginRequired: false
+
+# Expose Prometheus monitoring metrics at the HTTP endpoint '/metrics'
+metricsEnabled: false
+
+# Determine how many objects to display per page within a list. (Default: 50)
+paginateCount: 50
+
+releaseCheck:
+  # This repository is used to check whether there is a new release of NetBox
+  # available. Set to null to disable the version check or use the URL below to
+  # check for release in the official NetBox repository.
+  url: null
+  # url: https://api.github.com/repos/netbox-community/netbox/releases
+
+# Maximum execution time for background tasks, in seconds.
+rqDefaultTimeout: 300  # 5 mins
+
+# Time zone (default: UTC)
+timeZone: UTC
+
+# Date/time formatting. See the following link for supported formats:
+# https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
+dateFormat: 'N j, Y'
+shortDateFormat: 'Y-m-d'
+timeFormat: 'g:i a'
+shortTimeFormat: 'H:i:s'
+dateTimeFormat: 'N j, Y g:i a'
+shortDateTimeFormat: 'Y-m-d H:i'
+
+## Extra configuration settings
+# You can pass additional YAML files to be loaded into NetBox's configuration.
+# These can be passed as arbitrary configuration values set in the chart, or
+# you can load arbitrary *.yaml keys from ConfigMaps and Secrets.
+extraConfig: []
+  # - values:
+  #     EXTRA_SETTING_ONE: example
+  #     ANOTHER_SETTING: foobar
+  # - configMap: # pod.spec.volumes.configMap
+  #     name: netbox-extra
+  #     items: []
+  #     optional: false
+  # - secret: # same as pod.spec.volumes.secret
+  #     secretName: netbox-extra
+  #     items: []
+  #     optional: false
+
+# If provided, this should be a 50+ character string of random characters. It
+# will be randomly generated if left blank.
+# You can also use an existing secret with "secret_key" instead of "secretKey"
+# See `existingSecret` for details
+secretKey: ""
+
+## Provide passwords using existing secret
+# If set, this Secret must contain the following keys:
+# - db_password: database password (if postgresql.enabled is false and
+#     externalDatabase.existingSecretName is blank)
+# - email_password: SMTP user password
+# - redis_tasks_password: Redis password for tasks Redis instance (if
+#     redis.enabled is false and tasksRedis.existingSecretName is blank)
+# - redis_cache_password: Redis password for caching Redis instance (if
+#     redis.enabled is false and cachingRedis.existingSecretName is blank)
+# - secret_key: session encryption token (50+ random characters)
+# - superuser_password: Password for the initial super-user account
+# - superuser_api_token: API token created for the initial super-user account
+existingSecret: ""
+
+postgresql:
+  ## Deploy PostgreSQL using bundled chart
+  # To use an external database, set this to false and configure the settings
+  # under externalDatabase
+  enabled: true
+
+  auth:
+    username: peering-manager
+    database: peering-manager
+
+## External database settings
+# These are used if postgresql.enabled is false, and are ignored otherwise
+externalDatabase:
+  host: localhost
+  port: 5432
+  database: peering-manager
+  username: peering-manager
+  password: ""
+  existingSecretName: ""
+  existingSecretKey: postgresql-password
+
+  # The following settings also apply when using the bundled PostgreSQL chart:
+  sslMode: prefer
+  connMaxAge: 300
+  disableServerSideCursors: false
+  targetSessionAttrs: read-write
+
+redis:
+  ## Deploy Redis using bundled chart
+  # To use an external Redis instance, set this to false and configure the
+  # settings under *both* tasksRedis *and* cachingRedis
+  enabled: true
+
+tasksRedis:
+  database: 0
+  ssl: false
+  insecureSkipTlsVerify: false
+  caCertPath: ""
+
+  # Used only when redis.enabled is false. host and port are not used if
+  # sentinels are given.
+  host: peering-manager-redis
+  port: 6379
+  sentinels: []
+  #  - mysentinel:26379
+  sentinelService: peering-manager-redis
+  sentinelTimeout: 300
+  username: ""
+  password: ""
+  existingSecretName: ""
+  existingSecretKey: redis-password
+
+cachingRedis:
+  database: 1
+  ssl: false
+  insecureSkipTlsVerify: false
+  caCertPath: ""
+
+  # Used only when redis.enabled is false. host and port are not used if
+  # sentinels are given.
+  host: peering-manager-redis
+  port: 6379
+  sentinels: []
+  #  - mysentinel:26379
+  sentinelService: peering-manager-redis
+  sentinelTimeout: 300
+  username: ""
+  password: ""
+  existingSecretName: ""
+  existingSecretKey: redis-password
+
+
+init:
+  image:
+    repository: busybox
+    tag: 1.32.1
+    pullPolicy: IfNotPresent
+
+  resources: {}
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000  # Keep the same as securityContext.runAsGroup
+
+# Configuration of Cron settings
+housekeeping:
+  enabled: true
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 5
+  restartPolicy: OnFailure
+  schedule: '0 0 * * *'
+  successfulJobsHistoryLimit: 5
+  suspend: false
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  podSecurityContext:
+    fsGroup: 1000
+    runAsNonRoot: true
+    # runAsUser: 1000
+    # runAsGroup: 1000
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  resources: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  ## Additional environment variables to set
+  extraEnvs: []
+  #  - name: FOO
+  #    valueFrom:
+  #      secretKeyRef:
+  #        key: FOO
+  #        name: secret-resource
+
+  ## Additional volumes to mount
+  extraVolumeMounts: []
+  #  - name: extra-volume
+  #    mountPath: /run/secrets/super-secret
+  #    readOnly: true
+
+  extraVolumes: []
+  #  - name: extra-volume
+  #    secret:
+  #      secretName: super-secret
+
+  ## Additional containers to be added to the NetBox pod.
+  extraContainers: []
+  #  - name: my-sidecar
+  #    image: nginx:latest
+
+  ## Containers which are run before the NetBox containers are started.
+  extraInitContainers: []
+  #  - name: init-myservice
+  #    image: busybox
+  #    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
+# Worker for Netbox
+# Only required for Netbox Jobs, e.g. Webhooks
+worker:
+  enabled: true
+
+  replicaCount: 1
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  podSecurityContext:
+    fsGroup: 1000
+    runAsNonRoot: true
+    # runAsUser: 1000
+    # runAsGroup: 1000
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  resources: {}
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  hostAliases: []
+
+  updateStrategy: {}
+    # type: RollingUpdate
+
+  affinity: {}
+
+  ## Additional environment variables to set
+  extraEnvs: []
+  #  - name: FOO
+  #    valueFrom:
+  #      secretKeyRef:
+  #        key: FOO
+  #        name: secret-resource
+
+  ## Additional volumes to mount
+  extraVolumeMounts: []
+  #  - name: extra-volume
+  #    mountPath: /run/secrets/super-secret
+  #    readOnly: true
+
+  extraVolumes: []
+  #  - name: extra-volume
+  #    secret:
+  #      secretName: super-secret
+
+  ## Additional containers to be added to the NetBox pod.
+  extraContainers: []
+  #  - name: my-sidecar
+  #    image: nginx:latest
+
+  ## Containers which are run before the NetBox containers are started.
+  extraInitContainers: []
+  #  - name: init-myservice
+  #    image: busybox
+  #    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
