@@ -123,7 +123,6 @@ data:
     PAGINATE_COUNT: {{ int .Values.paginateCount }}
     PEERINGDB_USERNAME: {{ toJson .Values.peeringdb.username | quote }}
     PEERINGDB_API_KEY: {{ toJson .Values.peeringdb.apiKey | quote }}
-    PEERINGDB_SYNC_INTERVAL: {{ int .Values.peeringdb.syncInterval }}
     RELEASE_CHECK_URL: {{ toJson .Values.releaseCheck.url }}
 
     REDIS:

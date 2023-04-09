@@ -256,7 +256,6 @@ peeringdb:
   username: ''
   password: ''
   apiKey: ''
-  syncInterval: 86400
 
 releaseCheck:
   # This repository is used to check whether there is a new release of peering-manager
