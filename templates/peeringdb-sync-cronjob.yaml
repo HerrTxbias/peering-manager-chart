@@ -6,14 +6,14 @@ apiVersion: batch/v1beta1
 {{- end }}
 kind: CronJob
 metadata:
-  name: {{ include "peering-manager.fullname" . }}-peeringdbSync
+  name: {{ include "peering-manager.fullname" . }}-peeringdb-sync
   {{- with .Values.commonAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
     {{- include "peering-manager.labels" . | nindent 4 }}
-    app.kubernetes.io/component: peeringdbSync
+    app.kubernetes.io/component: peeringdb-sync
 spec:
   concurrencyPolicy: {{ .Values.peeringdbSync.concurrencyPolicy }}
   failedJobsHistoryLimit: {{ .Values.peeringdbSync.failedJobsHistoryLimit }}
@@ -33,7 +33,7 @@ spec:
           {{- end }}
           labels:
             {{- include "peering-manager.selectorLabels" . | nindent 12 }}
-            app.kubernetes.io/component: peeringdbSync
+            app.kubernetes.io/component: peeringdb-sync
             {{- with .Values.peeringdbSync.podLabels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -50,7 +50,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           containers:
-            - name: {{ .Chart.Name }}-peeringdbSync
+            - name: {{ .Chart.Name }}-peeringdb-sync
               securityContext:
                 {{- toYaml .Values.peeringdbSync.securityContext | nindent 16 }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
