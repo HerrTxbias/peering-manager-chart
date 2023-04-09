@@ -153,6 +153,8 @@ spec:
                       path: napalm_password
                     - key: netbox_api_token
                       path: netbox_api_token
+                    - key: peeringdb_api_key
+                      path: peeringdb_api_key
                     - key: peeringdb_password
                       path: peeringdb_password
                     - key: secret_key
